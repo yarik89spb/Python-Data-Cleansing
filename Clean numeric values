@@ -1,0 +1,49 @@
+# Cleanse a column that expected to have float numbers only
+# Adds a new column name column_NEW 
+import pandas as pd
+import numpy as np
+
+def Cleansing_float(df, column, print_changed_rows=True):
+    
+    column_new = column + '_NEW'
+    
+    # Replace missing values with empty string
+    df[column_new] = df[column].replace({np.nan:''})
+       
+    # Grab decimal part after the '.'
+    df['decimal_temp'] = df[column_new].astype('str').str.split('.', 1).str[-1]
+    df['decimal_temp'] = df['decimal_temp'].astype('str').str.replace(r'\D+', '', regex=True)
+    
+    # If a digit doesn't fave fractial part, replace decimal string with '0'
+    df.loc[df[column_new].astype('str').str.contains('\.') == False, 'decimal_temp'] = 0
+    
+    # Remove the decimal part 
+    df[column_new] = df[column_new].astype('str').str.split('.').str[0]
+    
+    # Remove zero if it comes in the beginning
+    df[column_new] = df[column_new].astype('str').str.lstrip('0')
+    
+    # Remove all non-digits
+    df[column_new] = df[column_new].astype('str').str.replace(r'\D+', '', regex=True)
+    
+    # Add the stripped decimal back
+    df[column_new] = df[column_new] + '.' + df['decimal_temp'].astype('str')
+
+    # Bring back missing values 
+    df[column_new].replace({'.0':''}, inplace=True)
+    df[column_new].replace({'':np.nan}, inplace=True)
+    
+    # Handle NaNs and specific cases where numeric part is completely missing
+    df[column_new].replace({'nan':np.nan}, inplace=True)
+    df[column_new].replace({'.':np.nan}, inplace=True)
+    
+    # Change format to numeric
+    df[column_new] = pd.to_numeric(df[column_new])
+    
+    # OPTIONAL PART 
+    # Part below helps to see what values have been changed by printing old + new columns 
+    
+    if print_changed_rows=True:
+      df[f'{column}_TEMP'] = (df[column_new].astype('str') == df[column].astype('str')).astype('int')
+      print(df[df[f'{column}_TEMP'] == 0].sort_values(by=(f'{column}_TEMP'))[[column, column_new]][:25])
+      df.drop(columns=[f'{column}_TEMP', 'decimal_temp'], inplace=True, axis=1)

@@ -1,0 +1,27 @@
+# Fixed version of the code taken from https://www.jianshu.com/p/152e081fec1b 
+# If the source code didn't work, welcome to try the code below since it worked for me
+# 原本的程式無法處理所有的字， 改完以後有成功
+# Input format: string 
+# Handles missing values, i.e. can by directly applied to the entire Pandas DF column using df[Column].apply(strQ2B)
+
+def strQ2B(ustring_list):
+    normal_str = ''
+    if ustring_list != ustring_list:
+        return ustring
+    
+    for uchar in ustring_list:
+        
+        inside_code = ord(uchar)
+        if inside_code == 0x3000:
+            inside_code = 0x0020
+            
+        else:
+            inside_code -= 0xfee0
+            if not (0x0021 <= inside_code and inside_code <= 0x7e):
+                normal_str += uchar
+                continue
+                
+            normal_str += chr(inside_code) 
+        
+    
+    return normal_str

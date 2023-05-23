@@ -1,0 +1,36 @@
+"""
+Parse a column of string values where every cell has arbitrary number of categorical values
+and create dummy variables 
+E.g. if range of values is ['A', 'B', 'C'], result will following"
+
+Value ->  Value Vale=A  Value=B Value=C
+AAB       AAB   1       1       0
+BAC       BAA   1       1       0
+CAC       CAC   1       0       1 
+
+"""
+import pandas as pd
+import numpy as np
+
+def stringDummies(df, column, sort=True):
+    # df - Pandas DataFrame
+    # column - column name (String)
+    # sort - sort columns alphabetically (Bool)
+    vector_function = np.vectorize(lambda x: set(x))
+    vals = df[column].unique()
+    unique_vals = set().union(*vector_function(vals))
+    for val in sorted(list(unique_vals), reverse=not sort):
+        df[f'{column}={val}'] = df[column].apply(lambda x: int(val in x))
+
+
+# Test data
+df = pd.DataFrame({'ID':np.arange(1, 6), 
+                   'Name':['Larry', 'Will', 'Samantha', 'Syndey', 'Bill'],
+                   'Grades':['BCA', 'DBBA', 'AA', 'ACD', 'B']})
+
+df.set_index('ID', inplace=True)
+df
+
+# Apply function
+stringDummies(df, 'Grades', sort=True)
+df

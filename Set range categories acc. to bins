@@ -1,0 +1,70 @@
+
+"""
+Background: column B contains strings represent set of ranges in format a-b (where a < b) 
+All data from column A must be divided into several bins representing respective range
+For example [5, 10, 15, 20] implies categories (ranges): 0-5, 5-10, 10-15, 15-20, >20
+Task: add new column that will have values from column B proprely separated into pre-defined bins
+!Only non-negative values! 
+"""
+
+import pandas as pd
+import numpy as np
+
+def RangeCategories(df, column, bins, suffix='_NEW'):
+    # df - Pandas Dataframe
+    # column - column name (String)
+    # bins - list of integers [a, b, c, d] representing range bins 
+    # Bins list can be represented by integers [1, 2, 3] 
+    # or numeric strings ['1', '2', '3'] or in arbitrary order
+    # suffix = optional suffix for the new column
+    
+    # New column name 
+    new_col = column + suffix 
+    # Copy orginal column 
+    df[new_col] = df[column].copy()
+
+    
+    # Remove all non-digit characters 
+    df[new_col] = df[new_col].str.replace('[^0-9]', '',regex=True, case=False) 
+    df.loc[(df[new_col].isnull()) | (df[new_col].astype('str').apply(len) <= 1), new_col] = np.nan
+    
+    # Separately handle last bin
+    max_val = str(bins[-1])
+    df.loc[df[new_col] == max_val, new_col] = max_val + max_val
+    
+    
+    # Add '-' between two values 
+    df[new_col] = df[new_col].apply(lambda x: x[:len(x) // 2] + '-' + x[len(x) // 2:] if x==x else x)
+    
+    # Create temporarry columns for upper and lower borders
+    df[column +'_upper'] = df[new_col].apply(lambda x: int(x.split('-')[-1]) if x == x else x)
+    df[column+'_lower'] = df[new_col].apply(lambda x: int(x.split('-')[0]) if x == x else x)
+    
+    original_length = len(bins)
+    try:
+        bins = list(map(int, bins))
+        if 0 not in bins:
+            bins.append(0)
+        bins = sorted(bins)
+    except:
+        print("List of bins must contain integers only")
+        return 0 
+        
+    for i in range(original_length - 1):
+        df.loc[(df[column+'_upper'] <= bins[i+1]) & 
+               (df[column+'_lower'] >= bins[i]), new_col] = str(bins[i]) +'-'+ str(bins[i+1])
+        
+    # Separately handle last bin 
+    df.loc[(df[column+'_upper'] >= bins[-1]) | (df[column+'_lower'] >= bins[-1]), new_col] = '>' + str(bins[-1])  
+    
+    df.drop(columns =[column+'_upper', column+'_lower'], axis=1, inplace=True )
+    
+    
+    
+    return df[[column, new_col]]
+    
+# Demonstration using test data 
+
+df_test = pd.DataFrame({'A': np.arange(1, 11), 'B':['80-90', '20 30', '0, 2', '100, 100', '5-7',
+                                                   '100', '5-9', '3..,2', np.nan, '1 to 2']})
+RangeCategories(df_test, 'B', [5, 10, 50, 100])

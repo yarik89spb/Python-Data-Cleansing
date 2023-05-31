@@ -18,9 +18,11 @@ def stringDummies(df, column, sort=True):
     # sort - sort columns alphabetically (Bool)
     vector_function = np.vectorize(lambda x: set(x))
     vals = df[column].unique()
+    # remove NaN
+    vals = [now for now in vals if now == now]
     unique_vals = set().union(*vector_function(vals))
     for val in sorted(list(unique_vals), reverse=not sort):
-        df[f'{column}={val}'] = df[column].apply(lambda x: int(val in x))
+        df[f'{column}={val}'] = df[column].apply(lambda x: int(val in x) if x==x else np.nan)
 
 
 # Test data

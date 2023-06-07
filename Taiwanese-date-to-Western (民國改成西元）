@@ -1,0 +1,26 @@
+'''Change date format from Taiwanese to the Western (AD).将日期格式从台湾式（民國）改为西方（西元）格式。 For example 1011009 -> 10/09/2012 例如 1011009 -> 10/09/2012
+'''
+
+def WesternStyle(date):
+    # Slice first three letters (if year >= 100)
+    # Slice first two letters (if year <= 99)
+    try:
+        date = str(date)
+        day_month = date[-4:]     
+        year = date[:len(date)-4]
+        year = int(year) + 1911 
+        # Desired format: # mm / dd / YYYY
+        return '/'.join([day_month[:2], day_month[2:], str(year)])
+    except ValueError:
+        return date
+
+# Sample data 
+
+df_test  = pd.DataFrame({'RecordID':['ID' + str(i) for i in range(1, 11)],
+                        'Date':[1011010,  981205, 1000121, 1011009, 1010827, 1010826, 1000403, 991213,  991212, 1011228, ]})
+df_test
+
+# Create new column by applying the function
+df_test['Date_New'] = df_test['Date'].apply(WesternStyle)
+df_test
+

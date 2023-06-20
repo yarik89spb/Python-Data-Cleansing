@@ -1,4 +1,4 @@
-'''Change date format from Taiwanese to the Western (AD).将日期格式从台湾式（民國）改为西方（西元）格式。 For example 1011009 -> 10/09/2012 例如 1011009 -> 10/09/2012
+'''Change date format from Taiwanese to the Western (AD).將日期格式從台灣式（民國）改為西方（西元）格式。。 For example 1011009 -> 10/09/2012 例如 1011009 -> 10/09/2012
 '''
 
 def WesternStyle(date):
